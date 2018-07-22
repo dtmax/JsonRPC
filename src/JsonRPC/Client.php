@@ -190,9 +190,16 @@ class Client
      */
     private function sendPayload($payload, array $headers = array())
     {
-        return ResponseParser::create()
+        $response = $this->httpClient->execute($payload, $headers);
+        $parsed = ResponseParser::create()
             ->withReturnException($this->returnException)
-            ->withPayload($this->httpClient->execute($payload, $headers))
+            ->withPayload($response)
             ->parse();
+        if ($parsed !== null) {
+            return $parsed;
+        } elseif ($httpException = $this->httpClient->stateGet('exception') and !$this->returnException) {
+            throw $httpException;
+        }
+        return $httpException ? $httpException : null;
     }
 }
