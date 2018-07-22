@@ -1,13 +1,12 @@
 {
-    "name": "dtmax/json-rpc",
+    "name": "fguillot/json-rpc",
     "description": "Simple Json-RPC client/server library that just works",
-    "homepage": "https://github.com/dtmax/JsonRPC",
+    "homepage": "https://github.com/fguillot/JsonRPC",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "Frédéric Guillot",
-            "name": "Max UA"
+            "name": "Frédéric Guillot"
         }
     ],
     "require": {
