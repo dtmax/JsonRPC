@@ -64,44 +64,40 @@ class HttpClientTest extends \PHPUnit_Framework_TestCase
 
     public function testWithServerError()
     {
-        $this->setExpectedException('\JsonRPC\Exception\ServerErrorException');
-
         $httpClient = new HttpClient();
         $httpClient->handleExceptions(array(
             'HTTP/1.0 301 Moved Permanently',
             'Connection: close',
             'HTTP/1.1 500 Internal Server Error',
         ));
+        $this->assertInstanceOf('\JsonRPC\Exception\ServerErrorException', $httpClient->stateGet('exception'));
     }
 
     public function testWithConnectionFailure()
     {
-        $this->setExpectedException('\JsonRPC\Exception\ConnectionFailureException');
-
         $httpClient = new HttpClient();
         $httpClient->handleExceptions(array(
             'HTTP/1.1 404 Not Found',
         ));
+        $this->assertInstanceOf('\JsonRPC\Exception\ConnectionFailureException', $httpClient->stateGet('exception'));
     }
 
     public function testWithAccessForbidden()
     {
-        $this->setExpectedException('\JsonRPC\Exception\AccessDeniedException');
-
         $httpClient = new HttpClient();
         $httpClient->handleExceptions(array(
             'HTTP/1.1 403 Forbidden',
         ));
+        $this->assertInstanceOf('\JsonRPC\Exception\AccessDeniedException', $httpClient->stateGet('exception'));
     }
 
     public function testWithAccessNotAllowed()
     {
-        $this->setExpectedException('\JsonRPC\Exception\AccessDeniedException');
-
         $httpClient = new HttpClient();
         $httpClient->handleExceptions(array(
             'HTTP/1.0 401 Unauthorized',
         ));
+        $this->assertInstanceOf('\JsonRPC\Exception\AccessDeniedException', $httpClient->stateGet('exception'));
     }
 
     public function testWithCallback()

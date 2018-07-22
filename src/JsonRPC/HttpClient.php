@@ -101,6 +101,14 @@ class HttpClient
     protected $beforeRequest;
 
     /**
+     * Current state (request, response etc)
+     *
+     * @access private
+     * @var Array
+     */
+    private $stateCurrent;
+
+    /**
      * HttpClient constructor
      *
      * @access public
@@ -263,6 +271,10 @@ class HttpClient
      */
     public function execute($payload, array $headers = array())
     {
+        $this->stateClear();
+        $this->stateSet('payload', $payload);
+        $this->stateSet('headers', $headers);
+
         if (is_callable($this->beforeRequest)) {
             call_user_func_array($this->beforeRequest, array($this, $payload, $headers));
         }
@@ -315,10 +327,36 @@ class HttpClient
             error_log('==> Response: '.PHP_EOL.json_encode($response, JSON_PRETTY_PRINT));
         }
 
+        $this->stateSet('response', $response);
+
         $this->handleExceptions($headers);
         $this->parseCookies($headers);
 
         return $response;
+    }
+
+    /**
+     * Clear current stats
+     *
+     * @access private
+     * @return void
+     */
+    public function stateClear()
+    {
+        $this->stateCurrent = [];
+    }
+
+    public function stateGet($key = null)
+    {
+        if ($key === null) {
+            return $this->stateCurrent;
+        }
+        return isset($this->stateCurrent[$key]) ? $this->stateCurrent[$key] : null;
+    }
+
+    public function stateSet($key, $value)
+    {
+        $this->stateCurrent[$key] = $value;
     }
 
     /**
@@ -402,8 +440,9 @@ class HttpClient
 
         foreach ($headers as $header) {
             foreach ($exceptions as $code => $exception) {
-                if (strpos($header, 'HTTP/1.0 '.$code) !== false || strpos($header, 'HTTP/1.1 '.$code) !== false) {
-                    throw new $exception('Response: '.$header);
+                if (strpos($header, 'HTTP/1.0 '.$code) !== false or strpos($header, 'HTTP/1.1 '.$code) !== false) {
+                    $this->stateSet('exception', new $exception('Response: ' . $header));
+                    return;
                 }
             }
         }
